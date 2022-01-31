@@ -1,0 +1,13 @@
+<button (click)="connect()">connect</button>
+<button (click)="userS.disconnect()">disconnect</button>
+
+<input type="text" placeholder="pseudo" id="pseudo">
+<button (click)="update()">update pseudo</button>
+<button (click)="userS.remove()">remove</button>
+<br>
+<button (click)="sendTransaction()">makeTransaction</button>
+
+
+<br>
+<p>user datas:</p>
+<div>{{userS.datas | async | json}}</div>
