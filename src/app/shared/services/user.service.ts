@@ -23,45 +23,84 @@ export class UserService {
     private http : HttpClient
   ) {
 
-    this.getUser();
+    this.getUser().then( user => {
+
+      console.log('user is connected');
+      this.refreshToken();
+
+    }).catch( err => {
+
+    });
 
   }
 
   getUser(){
+    return new Promise((resolve, reject) => {
 
-    this.http.get(`${environment.apiURL}/user/get`).subscribe( userDatas => {
-      this.datas.next(userDatas as User);
-    }, err => {
-      console.log('Error geting user.');
+      if ( localStorage.getItem('token') ){
+
+        this.http.get(`${environment.apiURL}/user/get`).subscribe( userDatas => {
+          this.datas.next(userDatas as User);
+          resolve(userDatas as User);
+        }, err => {
+          reject(err);
+          console.log('Error geting user.');
+        });
+      
+      }else{
+        reject("No token found.");
+      }
+        
     });
-
   }
 
   connect(){
 
-    this.http.get(`${environment.apiURL}/messageSample`).subscribe( messageSampleR => {
-      const a = async () => {
-        try{
-          const message = (messageSampleR as any).message ;
-          const signature = await this.walletsS.signMessage(message) ;
-          const address = this.walletsS.selected?.publicKey ;
-          this.http.post(`${environment.apiURL}/user/connect`, { address, signedMessage : signature}).subscribe( response => {
+    this.walletsS.connect().then( w => {
 
-            this.datas.next( (response as any).user as User );
-            localStorage.setItem('token', (response as any).token );
+      const address = this.walletsS.getPublicKey() ;
+      console.log('address', address );
 
-          }, err => {
+      this.http.get(`${environment.apiURL}/messageSample?address=${address}`).subscribe( messageSampleR => {
+        const a = async () => {
+          try{
+            const message = (messageSampleR as any).message ;
+            const signature = await this.walletsS.signMessage(message) ;
+            console.log('signed message', signature);
+            const address = this.walletsS.selected?.publicKey ;
+            this.http.post(`${environment.apiURL}/user/connect`, { address, signedMessage : signature}).subscribe( response => {
+
+              this.datas.next( (response as any).user as User );
+              localStorage.setItem('token', (response as any).token );
+
+            }, err => {
+              console.log('error connect');
+            });
+          }catch(err) {
             console.log('error connect');
-          });
-        }catch(err) {
-          console.log('error connect');
-        }
-      };
-      a();
-    }, err => {
-      console.log('error message', err);
+          }
+        };
+        a();
+      }, err => {
+        console.log('error message', err);
+      });
     });
 
+
+  }
+  refreshToken(){
+    return new Promise<any>((resolve, reject) => {
+
+      this.http.get(`${environment.apiURL}/user/refreshToken`).subscribe( tokenO => {
+
+        console.log('new token', tokenO );
+        localStorage.setItem('token', (tokenO as any).token  );
+
+      }, err => {
+
+      });
+
+    })
   }
   disconnect(){
     this.datas.next(null);
