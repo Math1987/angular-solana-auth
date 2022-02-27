@@ -17,6 +17,9 @@ export class AppComponent {
     public userS : UserService
   ){
 
+    this.walletsS.autoConnect = true ;
+    this.walletsS.setEnabledWallets(["Phantom"]);
+
   }
   connect(){
     this.userS.connect();
