@@ -19,8 +19,10 @@
     "@angular/platform-browser-dynamic": "~12.1.0",
     "@angular/router": "~12.1.0",
     "@solana/web3.js": "^1.32.0",
+    "@types/socket.io-client": "^3.0.0",
     "angular-sol-wallets": "0.0.19",
     "rxjs": "~6.6.0",
+    "socket.io-client": "^4.4.1",
     "tslib": "^2.2.0",
     "zone.js": "~0.11.4"
   },

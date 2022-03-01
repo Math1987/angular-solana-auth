@@ -55,34 +55,40 @@ export class UserService {
   }
 
   connect(){
+    return new Promise((resolve, reject) => {
 
-    this.walletsS.connect().then( w => {
+      this.walletsS.connect().then( w => {
 
-      const address = this.walletsS.getPublicKey() ;
-      console.log('address', address );
+        const address = this.walletsS.getPublicKey() ;
+        console.log('address', address );
 
-      this.http.get(`${environment.apiURL}/messageSample?address=${address}`).subscribe( messageSampleR => {
-        const a = async () => {
-          try{
-            const message = (messageSampleR as any).message ;
-            const signature = await this.walletsS.signMessage(message) ;
-            console.log('signed message', signature);
-            const address = this.walletsS.selected?.publicKey ;
-            this.http.post(`${environment.apiURL}/user/connect`, { address, signedMessage : signature}).subscribe( response => {
+        this.http.get(`${environment.apiURL}/messageSample?address=${address}`).subscribe( messageSampleR => {
+          const a = async () => {
+            try{
+              const message = (messageSampleR as any).message ;
+              const signature = await this.walletsS.signMessage(message) ;
+              console.log('signed message', signature);
+              const address = this.walletsS.selected?.publicKey ;
+              this.http.post(`${environment.apiURL}/user/connect`, { address, signedMessage : signature}).subscribe( response => {
 
-              this.datas.next( (response as any).user as User );
-              localStorage.setItem('token', (response as any).token );
+                this.datas.next( (response as any).user as User );
+                localStorage.setItem('token', (response as any).token );
+                resolve((response as any).user);
 
-            }, err => {
+              }, err => {
+                console.log('error connect');
+                reject(err);
+              });
+            }catch(err) {
               console.log('error connect');
-            });
-          }catch(err) {
-            console.log('error connect');
-          }
-        };
-        a();
-      }, err => {
-        console.log('error message', err);
+              reject(err);
+            }
+          };
+          a();
+        }, err => {
+          console.log('error message', err);
+          reject(err);
+        });
       });
     });
 

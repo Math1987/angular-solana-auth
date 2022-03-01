@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { SolWalletsService } from 'angular-sol-wallets';
 import { environment } from 'src/environments/environment';
+import { SocketService } from './shared/services/socket.service';
 import { UserService } from './shared/services/user.service';
 
 @Component({
@@ -14,7 +15,8 @@ export class AppComponent {
 
   constructor(
     private walletsS : SolWalletsService,
-    public userS : UserService
+    public userS : UserService,
+    private socketS : SocketService
   ){
 
     this.walletsS.autoConnect = true ;
@@ -22,7 +24,13 @@ export class AppComponent {
 
   }
   connect(){
-    this.userS.connect();
+    this.userS.connect().then( co =>{
+      this.socketS.connect();
+    });
+  }
+  disconnect(){
+    this.userS.disconnect();
+    this.socketS.disconnect();
   }
   update(){
     const pseudo = (document.querySelector("#pseudo") as HTMLInputElement).value ;
